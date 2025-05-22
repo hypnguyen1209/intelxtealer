@@ -1,0 +1,144 @@
+.api-response {
+    margin: 2rem 0;
+    padding: 1rem;
+    border-radius: 8px;
+    background-color: #f0f0f0;
+}
+
+.api-response h2 {
+    margin-top: 0;
+    color: #1890ff;
+    /* Ant Design primary color */
+}
+
+.api-response .message {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.error {
+    color: #ff4d4f;
+    /* Ant Design error color */
+    padding: 1rem;
+    background-color: #fff2f0;
+    border-radius: 8px;
+    margin: 1rem 0;
+    border: 1px solid #ffccc7;
+}
+
+.data-table-container {
+    margin: 2rem 0;
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.search-section {
+    margin-bottom: 24px;
+}
+
+.stats-section {
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: #f6ffed;
+    border-radius: 4px;
+    border: 1px solid #b7eb8f;
+}
+
+.stats-section .ant-statistic-title {
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.65);
+}
+
+.stats-section .ant-statistic-content {
+    font-size: 24px;
+    font-weight: bold;
+    color: #52c41a;
+}
+
+.stats-section .ant-statistic-content-suffix {
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.5);
+    margin-left: 8px;
+}
+
+h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: rgba(0, 0, 0, 0.85);
+    font-weight: 500;
+    font-size: 20px;
+}
+
+.column-search-container {
+    margin-top: 16px;
+    padding: 16px;
+    background-color: #fafafa;
+    border-radius: 4px;
+    border: 1px solid #f0f0f0;
+}
+
+/* Deep selectors for Ant Design components */
+:deep(.ant-table-row:hover) {
+    cursor: pointer;
+}
+
+:deep(.ant-table-thead > tr > th) {
+    background-color: #fafafa;
+}
+
+:deep(.ant-input-search-button) {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px !important;
+    width: 60px !important;
+}
+
+:deep(.ant-input-search) .ant-input-search-button {
+    border-radius: 0 4px 4px 0;
+}
+
+/* Table cell word wrapping */
+.wrapped-cell {
+    white-space: normal;
+    word-wrap: break-word;
+    word-break: break-all;
+    max-width: 0;
+    /* This forces the column to respect the width limits */
+}
+
+/* Make sure the table content doesn't overflow its container */
+.ant-table-cell {
+    overflow-wrap: break-word;
+}
+
+/* Increase the cell padding for better readability */
+.ant-table-tbody>tr>td {
+    padding: 12px 16px;
+}
+
+/* Add responsive table styles */
+.data-table {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.data-table .ant-table-thead>tr>th {
+    white-space: nowrap;
+    background-color: #f5f5f5;
+}
+
+@media (max-width: 768px) {
+    .ant-table {
+        font-size: 0.9rem;
+    }
+
+    .ant-table-tbody>tr>td {
+        padding: 8px 12px;
+    }
+}

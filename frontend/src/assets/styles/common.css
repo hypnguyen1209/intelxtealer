@@ -1,0 +1,84 @@
+/* Common theme colors */
+:root {
+    --primary-color: #1890ff;
+    --success-color: #52c41a;
+    --warning-color: #faad14;
+    --error-color: #ff4d4f;
+    --heading-color: rgba(0, 0, 0, 0.85);
+    --text-color: rgba(0, 0, 0, 0.65);
+    --text-color-secondary: rgba(0, 0, 0, 0.45);
+    --border-color: #e8e8e8;
+    --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+    --background-color: #f0f2f5;
+}
+
+/* Common layout styles */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.page-header {
+    margin-bottom: 24px;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 16px;
+    color: var(--heading-color);
+}
+
+/* Common component styles */
+.card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: var(--box-shadow);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.button-group {
+    display: flex;
+    gap: 8px;
+    margin: 16px 0;
+}
+
+/* Common form styles */
+.form-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--heading-color);
+}
+
+/* Utility classes */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.mt-16 {
+    margin-top: 16px;
+}
+
+.mb-16 {
+    margin-bottom: 16px;
+}
+
+.p-16 {
+    padding: 16px;
+}

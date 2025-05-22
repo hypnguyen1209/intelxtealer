@@ -1,0 +1,43 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    text-align: center;
+}
+
+.logos {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.logo {
+    height: 6em;
+    padding: 1.5em;
+    will-change: filter;
+    transition: filter 300ms;
+}
+
+.logo:hover {
+    filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.logo.vue:hover {
+    filter: drop-shadow(0 0 2em #42b883aa);
+}
+
+.go-logo {
+    display: flex;
+    align-items: center;
+    padding: 1.5em;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #00ADD8;
+    text-decoration: none;
+    transition: color 300ms;
+}
+
+.go-logo:hover {
+    color: #0088AA;
+    text-shadow: 0 0 2em rgba(0, 173, 216, 0.6);
+}
