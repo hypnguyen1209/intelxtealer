@@ -59,7 +59,7 @@ func initDB() error {
 	connString = os.Getenv("DATABASE_URL")
 	if connString == "" {
 		// Use default connection string if not provided - connect to default postgres database
-		connString = "postgres://postgres:postgres@postgres:5432/postgres?sslmode=disable"
+		connString = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
 	}
 
 	// Create a connection pool
@@ -514,7 +514,7 @@ func main() {
 	api.Get("/stats", func(c fiber.Ctx) error {
 		// Query the total count from the entries table
 		var count int
-		err := dbPool.QueryRow(context.Background(), "SELECT COUNT(*) FROM entries").Scan(&count)
+		err := dbPool.QueryRow(context.Background(), "SELECT COALESCE(SUM(entries_added), 0) FROM processed_log_files").Scan(&count)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"error":   "Failed to count entries",
@@ -572,6 +572,145 @@ func main() {
 			"count":          len(result),
 			"status":         "success",
 		})
+	})
+
+	// Find or remove duplicate entries in the database
+	api.Get("/duplicates", func(c fiber.Ctx) error {
+		// Check if we should remove duplicates or just report them
+		shouldRemove := c.Query("remove", "false") == "true"
+
+		ctx := context.Background()
+		var duplicates []Entry
+		var removed int
+
+		if shouldRemove {
+			// Start a transaction to ensure consistency
+			tx, err := dbPool.Begin(ctx)
+			if err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error":   "Failed to start transaction",
+					"details": err.Error(),
+				})
+			}
+			defer tx.Rollback(ctx) // will be ignored if transaction is committed
+
+			// First identify duplicates
+			rows, err := tx.Query(ctx, `
+				WITH duplicates AS (
+					SELECT id, url, username, password, created,
+						ROW_NUMBER() OVER(PARTITION BY url, username, password ORDER BY id) AS row_num
+					FROM entries
+				)
+				SELECT id, url, username, password, created
+				FROM duplicates
+				WHERE row_num > 1
+				ORDER BY url, username, password, id
+			`)
+			if err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error":   "Failed to identify duplicates",
+					"details": err.Error(),
+				})
+			}
+
+			// Process the duplicate rows
+			var duplicateIDs []int
+			for rows.Next() {
+				var entry Entry
+				if err := rows.Scan(&entry.ID, &entry.URL, &entry.User, &entry.Pass, &entry.Created); err != nil {
+					rows.Close()
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"error":   "Failed to scan row",
+						"details": err.Error(),
+					})
+				}
+				duplicates = append(duplicates, entry)
+				duplicateIDs = append(duplicateIDs, entry.ID)
+			}
+			rows.Close()
+
+			// Delete the duplicates if found
+			if len(duplicateIDs) > 0 {
+				// Convert duplicate IDs to a string for the SQL IN clause
+				idStrs := make([]string, len(duplicateIDs))
+				for i, id := range duplicateIDs {
+					idStrs[i] = strconv.Itoa(id)
+				}
+				idList := strings.Join(idStrs, ",")
+
+				// Execute the delete query
+				result, err := tx.Exec(ctx, "DELETE FROM entries WHERE id IN ("+idList+")")
+				if err != nil {
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"error":   "Failed to remove duplicates",
+						"details": err.Error(),
+					})
+				}
+
+				// Get number of removed rows
+				removed = int(result.RowsAffected())
+
+				// Commit the transaction
+				if err := tx.Commit(ctx); err != nil {
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"error":   "Failed to commit transaction",
+						"details": err.Error(),
+					})
+				}
+			}
+
+			return c.JSON(fiber.Map{
+				"duplicatesFound":   len(duplicates),
+				"duplicatesRemoved": removed,
+				"duplicates":        duplicates,
+				"status":            "success",
+			})
+		} else {
+			// Just query and return duplicates without removing them
+			rows, err := dbPool.Query(ctx, `
+				WITH duplicates AS (
+					SELECT id, url, username, password, created,
+						ROW_NUMBER() OVER(PARTITION BY url, username, password ORDER BY id) AS row_num
+					FROM entries
+				)
+				SELECT id, url, username, password, created
+				FROM duplicates
+				WHERE row_num > 1
+				ORDER BY url, username, password, id
+			`)
+			if err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error":   "Failed to identify duplicates",
+					"details": err.Error(),
+				})
+			}
+			defer rows.Close()
+
+			// Process and return the duplicate rows
+			for rows.Next() {
+				var entry Entry
+				if err := rows.Scan(&entry.ID, &entry.URL, &entry.User, &entry.Pass, &entry.Created); err != nil {
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"error":   "Failed to scan row",
+						"details": err.Error(),
+					})
+				}
+				duplicates = append(duplicates, entry)
+			}
+
+			if err := rows.Err(); err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error":   "Error processing results",
+					"details": err.Error(),
+				})
+			}
+
+			return c.JSON(fiber.Map{
+				"duplicatesFound": len(duplicates),
+				"duplicates":      duplicates,
+				"status":          "success",
+			})
+		}
 	})
 
 	// Start the server on port 3000
